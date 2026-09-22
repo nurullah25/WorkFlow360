@@ -62,7 +62,7 @@ derived per day from check-ins, leave and holidays, and every important action i
 
 ## Tech stack
 
-| | |
+| Area | Technology |
 |---|---|
 | **Backend** | C# / .NET 8, ASP.NET Core Web API, Entity Framework Core 8, SQL Server, FluentValidation, Serilog, Swagger |
 | **Auth** | JWT bearer tokens, refresh token rotation, ASP.NET Core Identity's PBKDF2 password hasher (without the Identity schema) |
