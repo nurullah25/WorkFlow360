@@ -1,5 +1,8 @@
 # WorkFlow360
 
+[![CI](https://github.com/nurullah25/WorkFlow360/actions/workflows/ci.yml/badge.svg)](https://github.com/nurullah25/WorkFlow360/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 An internal business application for a small-to-mid-size company: employees and departments, projects and tasks,
 attendance, leave with approvals, in-app notifications and an audit trail. Built with **ASP.NET Core 8**,
 **Entity Framework Core**, **SQL Server** and **Angular**.
@@ -23,6 +26,7 @@ derived per day from check-ins, leave and holidays, and every important action i
 - [Testing](#testing)
 - [Design decisions](#design-decisions)
 - [Future improvements](#future-improvements)
+- [License](#license)
 
 ## Features
 
@@ -274,6 +278,8 @@ git-ignored `appsettings.Development.json` (or user secrets / environment variab
 
 ## Testing
 
+Both suites run on every push and pull request via [GitHub Actions](.github/workflows/ci.yml).
+
 ```bash
 dotnet test                                   # 77 backend tests
 cd Frontend/workflow360-angular && npm test -- --watch=false
@@ -315,5 +321,8 @@ The reasoning behind the main choices is in [docs/design-notes.md](docs/design-n
 - Pro-rated leave allocation for people who join mid-year, and carry-over rules.
 - File attachments (sick-leave certificates, task files).
 - Password change / reset by email, and multi-factor sign-in.
-- CI pipeline running both test suites on every push.
 - Docker Compose for one-command local setup.
+
+## License
+
+[MIT](LICENSE)
