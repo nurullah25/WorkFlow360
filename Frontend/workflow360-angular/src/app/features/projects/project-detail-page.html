@@ -1,0 +1,151 @@
+@if (notFound()) {
+  <div class="panel empty">
+    <p>This project doesn't exist or you don't have access to it.</p>
+    <a mat-button routerLink="/projects">Back to projects</a>
+  </div>
+} @else if (project(); as project) {
+  <a class="back-link" routerLink="/projects">
+    <mat-icon>arrow_back</mat-icon>
+    Projects
+  </a>
+
+  <div class="title-row">
+    <div>
+      <h1>
+        <span class="code">{{ project.code }}</span>
+        {{ project.name }}
+      </h1>
+      <app-status-badge [label]="statusLabel(project.status)" [tone]="statusTone(project.status)" />
+    </div>
+    @if (project.canManage) {
+      <button mat-stroked-button (click)="editProject()">
+        <mat-icon>edit</mat-icon>
+        Edit project
+      </button>
+    }
+  </div>
+
+  @if (project.description) {
+    <p class="description">{{ project.description }}</p>
+  }
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Project manager</div>
+      <div class="stat-value">{{ project.managerName }}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Timeline</div>
+      <div class="stat-value">
+        {{ project.startDate | date: 'mediumDate' }} –
+        {{ project.endDate ? (project.endDate | date: 'mediumDate') : 'open' }}
+      </div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Progress</div>
+      <div class="stat-value">{{ progress().done }} of {{ progress().total }} tasks done</div>
+      <mat-progress-bar mode="determinate" [value]="progress().percent" />
+    </div>
+    <div class="stat">
+      <div class="stat-label">In progress / review</div>
+      <div class="stat-value">{{ project.tasks.inProgress }} / {{ project.tasks.inReview }}</div>
+    </div>
+    <div class="stat" [class.stat-alert]="project.tasks.overdue > 0">
+      <div class="stat-label">Overdue</div>
+      <div class="stat-value">{{ project.tasks.overdue }}</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <section class="table-card">
+      <div class="section-header">
+        <h2>Tasks</h2>
+        @if (canEditTasks()) {
+          <button mat-flat-button (click)="newTask()">
+            <mat-icon>add</mat-icon>
+            New task
+          </button>
+        }
+      </div>
+
+      @if (loadingTasks()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      <form class="filter-bar" [formGroup]="taskFilters">
+        <mat-form-field subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="status">
+            <mat-option value="open">Open</mat-option>
+            @for (status of taskStatuses; track status) {
+              <mat-option [value]="status">{{ taskStatusLabel(status) }}</mat-option>
+            }
+            <mat-option value="all">All</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field subscriptSizing="dynamic">
+          <mat-label>Assignee</mat-label>
+          <mat-select formControlName="assigneeId">
+            <mat-option [value]="null">Anyone</mat-option>
+            @for (person of assignees(); track person.id) {
+              <mat-option [value]="person.id">{{ person.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </form>
+
+      <app-task-table
+        [tasks]="tasks().items"
+        [showProject]="false"
+        [loading]="loadingTasks()"
+        emptyText="No tasks match these filters."
+        (sortChange)="onTaskSort($event)"
+      />
+
+      <mat-paginator
+        [length]="tasks().totalCount"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="[10, 20, 50]"
+        (page)="onTaskPage($event)"
+      />
+    </section>
+
+    <aside class="panel members">
+      <div class="section-header">
+        <h2>Members ({{ project.members.length }})</h2>
+        @if (canEditTasks()) {
+          <button mat-icon-button (click)="addMember()" matTooltip="Add member" aria-label="Add member">
+            <mat-icon>person_add</mat-icon>
+          </button>
+        }
+      </div>
+
+      <ul>
+        @for (member of project.members; track member.employeeId) {
+          <li>
+            <div>
+              <div class="cell-primary">{{ member.fullName }}</div>
+              <div class="cell-secondary">{{ member.roleInProject ?? member.designationTitle }}</div>
+            </div>
+            @if (canEditTasks()) {
+              <button
+                mat-icon-button
+                (click)="removeMember(member)"
+                matTooltip="Remove from project"
+                [attr.aria-label]="'Remove ' + member.fullName"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </li>
+        } @empty {
+          <li class="muted">No members yet.</li>
+        }
+      </ul>
+    </aside>
+  </div>
+} @else {
+  <mat-progress-bar mode="indeterminate" />
+}

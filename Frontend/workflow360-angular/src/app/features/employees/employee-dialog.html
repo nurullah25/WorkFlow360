@@ -1,0 +1,111 @@
+<h2 mat-dialog-title>{{ employee ? 'Edit employee' : 'Add employee' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-dialog-content>
+    @if (errorMessage()) {
+      <div class="form-error-banner">{{ errorMessage() }}</div>
+    }
+    @if (endsEmployment()) {
+      <div class="form-hint-banner">
+        Saving will deactivate this person's user account. Direct reports must be moved to another manager first.
+      </div>
+    }
+
+    <div class="form-grid">
+      <mat-form-field>
+        <mat-label>Employee code</mat-label>
+        <input matInput formControlName="employeeCode" maxlength="20" />
+        <mat-error>{{ fieldError(form.controls.employeeCode) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (status of statuses; track status) {
+            <mat-option [value]="status">{{ status }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>First name</mat-label>
+        <input matInput formControlName="firstName" />
+        <mat-error>{{ fieldError(form.controls.firstName) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Last name</mat-label>
+        <input matInput formControlName="lastName" />
+        <mat-error>{{ fieldError(form.controls.lastName) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Work email</mat-label>
+        <input matInput type="email" formControlName="email" />
+        <mat-error>{{ fieldError(form.controls.email) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone" />
+        <mat-error>{{ fieldError(form.controls.phone) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Department</mat-label>
+        <mat-select formControlName="departmentId">
+          @for (department of departments(); track department.id) {
+            <mat-option [value]="department.id">{{ department.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ fieldError(form.controls.departmentId) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Designation</mat-label>
+        <mat-select formControlName="designationId">
+          @for (designation of designations(); track designation.id) {
+            <mat-option [value]="designation.id">{{ designation.title }}</mat-option>
+          }
+        </mat-select>
+        <mat-error>{{ fieldError(form.controls.designationId) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Manager</mat-label>
+        <input
+          matInput
+          [formControl]="managerSearch"
+          [matAutocomplete]="managerAuto"
+          placeholder="Search by name or code"
+        />
+        <mat-autocomplete
+          #managerAuto="matAutocomplete"
+          [displayWith]="displayManager"
+          (optionSelected)="onManagerSelected($event)"
+        >
+          @for (option of managerOptions(); track option.id) {
+            <mat-option [value]="option">
+              {{ option.fullName }} <span class="cell-secondary">· {{ option.employeeCode }}</span>
+            </mat-option>
+          }
+        </mat-autocomplete>
+        <mat-hint>Leave empty if they don't report to anyone.</mat-hint>
+        <mat-error>{{ fieldError(managerSearch) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Joining date</mat-label>
+        <input matInput [matDatepicker]="joiningPicker" formControlName="joiningDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="joiningPicker" />
+        <mat-datepicker #joiningPicker />
+        <mat-error>{{ fieldError(form.controls.joiningDate) }}</mat-error>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="saving()">Save</button>
+  </mat-dialog-actions>
+</form>

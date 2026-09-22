@@ -1,0 +1,126 @@
+<app-page-header heading="Users" subtitle="Sign-in accounts and their roles.">
+  <button mat-flat-button (click)="openDialog(null)">
+    <mat-icon>add</mat-icon>
+    Create account
+  </button>
+</app-page-header>
+
+<div class="table-card">
+  @if (loading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  <form class="filter-bar" [formGroup]="filters">
+    <mat-form-field class="search-field" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput formControlName="search" placeholder="Search name or email" />
+    </mat-form-field>
+
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Role</mat-label>
+      <mat-select formControlName="role">
+        <mat-option value="">All roles</mat-option>
+        @for (role of roles; track role) {
+          <mat-option [value]="role">{{ role }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="">All</mat-option>
+        <mat-option value="active">Active</mat-option>
+        <mat-option value="inactive">Inactive</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  <div class="table-scroll">
+    <table
+      mat-table
+      [dataSource]="result().items"
+      matSort
+      matSortActive="name"
+      matSortDirection="asc"
+      matSortDisableClear
+      (matSortChange)="onSort($event)"
+    >
+      <ng-container matColumnDef="user">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="name">User</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="cell-primary">{{ row.fullName }}</div>
+          <div class="cell-secondary">{{ row.email }}</div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="role">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="role">Role</th>
+        <td mat-cell *matCellDef="let row">{{ row.role }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="employee">
+        <th mat-header-cell *matHeaderCellDef>Employee</th>
+        <td mat-cell *matCellDef="let row">{{ row.employeeCode ?? '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let row">
+          <app-status-badge
+            [label]="row.isActive ? 'Active' : 'Inactive'"
+            [tone]="row.isActive ? 'success' : 'neutral'"
+          />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="lastLoginAt">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header="lastLoginAt">Last sign-in</th>
+        <td mat-cell *matCellDef="let row">
+          {{ row.lastLoginAt ? (row.lastLoginAt | date: 'medium') : 'Never' }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let row" class="actions-cell">
+          <button mat-icon-button [matMenuTriggerFor]="rowMenu" aria-label="Account actions">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+          <mat-menu #rowMenu="matMenu" xPosition="before">
+            <button mat-menu-item (click)="openDialog(row)">
+              <mat-icon>edit</mat-icon>
+              <span>Edit</span>
+            </button>
+            <button mat-menu-item (click)="resetPassword(row)">
+              <mat-icon>key</mat-icon>
+              <span>Reset password</span>
+            </button>
+            @if (row.id !== currentUserId) {
+              <button mat-menu-item (click)="toggleActive(row)">
+                <mat-icon>{{ row.isActive ? 'block' : 'check_circle' }}</mat-icon>
+                <span>{{ row.isActive ? 'Deactivate' : 'Activate' }}</span>
+              </button>
+            }
+          </mat-menu>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      <tr class="mat-mdc-row empty-row" *matNoDataRow>
+        <td [attr.colspan]="columns.length">
+          {{ loading() ? 'Loading…' : 'No users match these filters.' }}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <mat-paginator
+    [length]="result().totalCount"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+  />
+</div>

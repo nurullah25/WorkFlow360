@@ -1,0 +1,52 @@
+.tab-body {
+  padding-top: 16px;
+}
+
+.balances {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.balance {
+  padding: 14px 16px;
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  background: var(--wf-surface);
+
+  &.empty {
+    color: var(--wf-text-muted);
+  }
+}
+
+.balance-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wf-text-muted);
+}
+
+.balance-available {
+  margin-top: 4px;
+  font-size: 26px;
+  font-weight: 600;
+
+  span {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--wf-text-muted);
+  }
+}
+
+.balance-detail {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--wf-text-muted);
+}
+
+.card-title {
+  margin: 0;
+  padding: 14px 16px 4px;
+  font-size: 15px;
+  font-weight: 600;
+}

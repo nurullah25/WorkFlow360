@@ -1,0 +1,79 @@
+<h2 mat-dialog-title>{{ project ? 'Edit project' : 'New project' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-dialog-content>
+    @if (errorMessage()) {
+      <div class="form-error-banner">{{ errorMessage() }}</div>
+    }
+
+    <div class="form-grid">
+      <mat-form-field>
+        <mat-label>Code</mat-label>
+        <input matInput formControlName="code" maxlength="20" placeholder="e.g. HRP" />
+        <mat-error>{{ fieldError(form.controls.code) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (status of statuses; track status) {
+            <mat-option [value]="status">{{ statusLabel(status) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="full-width">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" maxlength="150" />
+        <mat-error>{{ fieldError(form.controls.name) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description" rows="3"></textarea>
+        <mat-error>{{ fieldError(form.controls.description) }}</mat-error>
+      </mat-form-field>
+
+      @if (canChooseManager) {
+        <mat-form-field class="full-width">
+          <mat-label>Project manager</mat-label>
+          <input matInput [formControl]="managerSearch" [matAutocomplete]="managerAuto" placeholder="Search by name or code" />
+          <mat-autocomplete
+            #managerAuto="matAutocomplete"
+            [displayWith]="displayManager"
+            (optionSelected)="onManagerSelected($event)"
+          >
+            @for (option of managerOptions(); track option.id) {
+              <mat-option [value]="option">
+                {{ option.fullName }} <span class="cell-secondary">· {{ option.employeeCode }}</span>
+              </mat-option>
+            }
+          </mat-autocomplete>
+          <mat-error>{{ fieldError(managerSearch) }}</mat-error>
+        </mat-form-field>
+      }
+
+      <mat-form-field>
+        <mat-label>Start date</mat-label>
+        <input matInput [matDatepicker]="startPicker" formControlName="startDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker" />
+        <mat-datepicker #startPicker />
+        <mat-error>{{ fieldError(form.controls.startDate) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>End date</mat-label>
+        <input matInput [matDatepicker]="endPicker" formControlName="endDate" />
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker" />
+        <mat-datepicker #endPicker />
+        <mat-hint>Optional</mat-hint>
+        <mat-error>{{ fieldError(form.controls.endDate) }}</mat-error>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="saving()">Save</button>
+  </mat-dialog-actions>
+</form>

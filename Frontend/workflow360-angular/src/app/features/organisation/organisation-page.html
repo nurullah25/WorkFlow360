@@ -1,0 +1,107 @@
+<app-page-header heading="Departments" subtitle="Organisation structure and job titles." />
+
+<div class="table-card">
+  <mat-tab-group animationDuration="0ms" mat-stretch-tabs="false" mat-align-tabs="start">
+    <mat-tab label="Departments">
+      <div class="tab-toolbar">
+        <button mat-flat-button (click)="editDepartment(null)">
+          <mat-icon>add</mat-icon>
+          Add department
+        </button>
+      </div>
+
+      @if (loadingDepartments()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      <div class="table-scroll">
+        <table mat-table [dataSource]="departments()">
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let row" class="cell-primary">{{ row.code }}</td>
+          </ng-container>
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+          </ng-container>
+          <ng-container matColumnDef="employeeCount">
+            <th mat-header-cell *matHeaderCellDef>Employees</th>
+            <td mat-cell *matCellDef="let row">{{ row.employeeCount }}</td>
+          </ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <app-status-badge
+                [label]="row.isActive ? 'Active' : 'Inactive'"
+                [tone]="row.isActive ? 'success' : 'neutral'"
+              />
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row" class="actions-cell">
+              <button mat-icon-button (click)="editDepartment(row)" matTooltip="Edit" aria-label="Edit department">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="departmentColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: departmentColumns"></tr>
+          <tr class="mat-mdc-row empty-row" *matNoDataRow>
+            <td [attr.colspan]="departmentColumns.length">No departments yet.</td>
+          </tr>
+        </table>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Designations">
+      <div class="tab-toolbar">
+        <button mat-flat-button (click)="editDesignation(null)">
+          <mat-icon>add</mat-icon>
+          Add designation
+        </button>
+      </div>
+
+      @if (loadingDesignations()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+
+      <div class="table-scroll">
+        <table mat-table [dataSource]="designations()">
+          <ng-container matColumnDef="title">
+            <th mat-header-cell *matHeaderCellDef>Title</th>
+            <td mat-cell *matCellDef="let row" class="cell-primary">{{ row.title }}</td>
+          </ng-container>
+          <ng-container matColumnDef="employeeCount">
+            <th mat-header-cell *matHeaderCellDef>Employees</th>
+            <td mat-cell *matCellDef="let row">{{ row.employeeCount }}</td>
+          </ng-container>
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <app-status-badge
+                [label]="row.isActive ? 'Active' : 'Inactive'"
+                [tone]="row.isActive ? 'success' : 'neutral'"
+              />
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row" class="actions-cell">
+              <button mat-icon-button (click)="editDesignation(row)" matTooltip="Edit" aria-label="Edit designation">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="designationColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: designationColumns"></tr>
+          <tr class="mat-mdc-row empty-row" *matNoDataRow>
+            <td [attr.colspan]="designationColumns.length">No designations yet.</td>
+          </tr>
+        </table>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

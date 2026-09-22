@@ -1,0 +1,198 @@
+<app-page-header [heading]="greeting()" [subtitle]="(now | date: 'EEEE, d MMMM y') ?? ''" />
+
+@if (dashboard(); as data) {
+  @if (data.me; as me) {
+    <section>
+      <h2 class="section-title">My day</h2>
+      <div class="kpi-row">
+        @if (attendanceTile(); as tile) {
+          <app-stat-tile label="Attendance" [value]="tile.value" [hint]="tile.hint" [tone]="tile.tone" link="/attendance" />
+        }
+        <app-stat-tile
+          label="My open tasks"
+          [value]="me.openTasks"
+          [hint]="me.overdueTasks > 0 ? me.overdueTasks + ' overdue' : 'Nothing overdue'"
+          [tone]="me.overdueTasks > 0 ? 'danger' : 'default'"
+          link="/tasks"
+        />
+        @if (mainBalance(); as balance) {
+          <app-stat-tile
+            [label]="balance.leaveTypeName + ' left'"
+            [value]="balance.availableDays + ' days'"
+            [hint]="balance.usedDays + ' used · ' + balance.pendingDays + ' pending'"
+            link="/leave"
+          />
+        }
+      </div>
+    </section>
+  }
+
+  @if (data.team; as team) {
+    <section>
+      <h2 class="section-title">My team</h2>
+      <div class="kpi-row">
+        <app-stat-tile label="Direct reports" [value]="team.directReports" />
+        <app-stat-tile label="Checked in today" [value]="team.checkedInToday + ' / ' + team.directReports" link="/attendance" />
+        <app-stat-tile label="On leave today" [value]="team.onLeaveToday" />
+        <app-stat-tile
+          label="Leave to approve"
+          [value]="team.pendingApprovals"
+          [hint]="team.pendingApprovals > 0 ? 'Waiting for you' : 'All caught up'"
+          [tone]="team.pendingApprovals > 0 ? 'warning' : 'default'"
+          link="/leave"
+          [queryParams]="{ tab: 'approvals' }"
+        />
+      </div>
+    </section>
+  }
+
+  @if (data.company; as company) {
+    <section>
+      <h2 class="section-title">Company today</h2>
+      <div class="kpi-row">
+        <app-stat-tile label="Employees" [value]="company.activeEmployees" link="/employees" />
+        <app-stat-tile
+          label="Checked in"
+          [value]="company.checkedInToday + ' / ' + company.activeEmployees"
+          [hint]="company.lateToday + ' late'"
+          [tone]="company.lateToday > 0 ? 'warning' : 'default'"
+        />
+        <app-stat-tile label="On leave today" [value]="company.onLeaveToday" />
+        <app-stat-tile label="Pending leave requests" [value]="company.pendingLeaveRequests" link="/leave" [queryParams]="{ tab: 'team' }" />
+        <app-stat-tile label="Active projects" [value]="company.activeProjects" link="/projects" />
+        <app-stat-tile
+          label="Overdue tasks"
+          [value]="company.overdueTasks"
+          [hint]="'of ' + company.openTasks + ' open'"
+          [tone]="company.overdueTasks > 0 ? 'danger' : 'default'"
+        />
+      </div>
+    </section>
+  }
+
+  <div class="cards">
+    @if (data.me; as me) {
+      <section class="card">
+        <div class="card-header">
+          <h3>Due soon</h3>
+          <a routerLink="/tasks">All my tasks</a>
+        </div>
+        <ul class="list">
+          @for (task of me.dueSoon; track task.id) {
+            <li>
+              <a [routerLink]="['/tasks', task.id]" class="task-link">
+                <span class="task-title">{{ task.title }}</span>
+                <span class="cell-secondary">{{ task.projectCode }}</span>
+              </a>
+              <span class="due" [class.overdue]="task.isOverdue">
+                @if (task.isOverdue) {
+                  <mat-icon>schedule</mat-icon> Overdue ·
+                }
+                {{ task.dueDate ? (task.dueDate | date: 'd MMM') : 'No date' }}
+              </span>
+            </li>
+          } @empty {
+            <li class="empty">No open tasks assigned to you.</li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (data.team?.projects?.length) {
+      <section class="card">
+        <div class="card-header">
+          <h3>Projects I manage</h3>
+          <a routerLink="/projects">All projects</a>
+        </div>
+        <ul class="list">
+          @for (project of data.team!.projects; track project.id) {
+            <li class="project">
+              <a [routerLink]="['/projects', project.id]" class="project-name">
+                <span class="cell-secondary">{{ project.code }}</span> {{ project.name }}
+              </a>
+              <div class="meter-row">
+                <mat-progress-bar
+                  mode="determinate"
+                  [value]="percent(project.doneTasks, project.totalTasks)"
+                  [attr.aria-label]="project.doneTasks + ' of ' + project.totalTasks + ' tasks done'"
+                />
+                <span class="cell-secondary">{{ project.doneTasks }}/{{ project.totalTasks }} done</span>
+              </div>
+              @if (project.overdueTasks > 0) {
+                <app-status-badge [label]="project.overdueTasks + ' overdue'" tone="danger" />
+              }
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (data.company; as company) {
+      <section class="card">
+        <div class="card-header">
+          <h3>Headcount by department</h3>
+        </div>
+        <ul class="bars" aria-label="Current employees per department">
+          @for (row of company.headcount; track row.department) {
+            <li [matTooltip]="row.department + ': ' + row.employees + ' employee(s)'">
+              <span class="bar-label">{{ row.department }}</span>
+              <span class="bar-track">
+                <span class="bar" [style.width.%]="(row.employees / maxHeadcount()) * 100"></span>
+                <span class="bar-value">{{ row.employees }}</span>
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (data.me; as me) {
+      <section class="card">
+        <div class="card-header">
+          <h3>My leave</h3>
+          <a routerLink="/leave">Request leave</a>
+        </div>
+        <ul class="list compact">
+          @for (balance of me.leaveBalances; track balance.id) {
+            <li>
+              <span>{{ balance.leaveTypeName }}</span>
+              <span><strong>{{ balance.availableDays }}</strong><span class="cell-secondary"> of {{ balance.allocatedDays }} left</span></span>
+            </li>
+          }
+        </ul>
+        @if (me.upcomingLeave.length) {
+          <h4>Coming up</h4>
+          <ul class="list compact">
+            @for (leave of me.upcomingLeave; track leave.id) {
+              <li>
+                <span>
+                  {{ leave.leaveTypeName }} ·
+                  {{ leave.startDate | date: 'd MMM' }}{{ leave.endDate !== leave.startDate ? ' – ' + (leave.endDate | date: 'd MMM') : '' }}
+                </span>
+                <app-status-badge [label]="leave.status" [tone]="leaveStatusTone(leave.status)" />
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+
+    <section class="card">
+      <div class="card-header">
+        <h3>Upcoming holidays</h3>
+      </div>
+      <ul class="list compact">
+        @for (holiday of data.upcomingHolidays; track holiday.id) {
+          <li>
+            <span>{{ holiday.name }}</span>
+            <span class="cell-secondary">{{ holiday.date | date: 'EEE, d MMM' }}</span>
+          </li>
+        } @empty {
+          <li class="empty">No more holidays this year.</li>
+        }
+      </ul>
+    </section>
+  </div>
+} @else {
+  <mat-progress-bar mode="indeterminate" />
+}

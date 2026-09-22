@@ -1,0 +1,112 @@
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (showFilters()) {
+  <form class="filter-bar" [formGroup]="filters">
+    <mat-form-field class="search-field" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput formControlName="search" placeholder="Search employee name or code" />
+    </mat-form-field>
+    <mat-form-field subscriptSizing="dynamic">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option value="">All statuses</mat-option>
+        @for (status of statuses; track status) {
+          <mat-option [value]="status">{{ status }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+}
+
+<div class="table-scroll">
+  <table mat-table [dataSource]="result().items">
+    <ng-container matColumnDef="employee">
+      <th mat-header-cell *matHeaderCellDef>Employee</th>
+      <td mat-cell *matCellDef="let row">
+        <div class="cell-primary">{{ row.employeeName }}</div>
+        <div class="cell-secondary">{{ row.employeeCode }}</div>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="leave">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let row">{{ row.leaveTypeName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="dates">
+      <th mat-header-cell *matHeaderCellDef>Dates</th>
+      <td mat-cell *matCellDef="let row">
+        {{ row.startDate | date: 'mediumDate' }}
+        @if (row.endDate !== row.startDate) {
+          – {{ row.endDate | date: 'mediumDate' }}
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="days">
+      <th mat-header-cell *matHeaderCellDef>Days</th>
+      <td mat-cell *matCellDef="let row">{{ row.totalDays }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="reason">
+      <th mat-header-cell *matHeaderCellDef>Reason</th>
+      <td mat-cell *matCellDef="let row" class="reason">{{ row.reason }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let row">
+        <app-status-badge [label]="row.status" [tone]="statusTone(row.status)" />
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="review">
+      <th mat-header-cell *matHeaderCellDef>Review</th>
+      <td mat-cell *matCellDef="let row" class="reason">
+        @if (row.reviewedByName) {
+          <div>{{ row.reviewedByName }}</div>
+          @if (row.reviewComment) {
+            <div class="cell-secondary" [matTooltip]="row.reviewComment">“{{ row.reviewComment }}”</div>
+          }
+        } @else if (row.status === 'Pending') {
+          <span class="cell-secondary">Awaiting review</span>
+        } @else {
+          <span class="cell-secondary">—</span>
+        }
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let row">
+        <div class="row-actions">
+          @if (row.canReview) {
+            <button mat-button class="reject-button" (click)="review(row, 'reject')">Reject</button>
+            <button mat-flat-button (click)="review(row, 'approve')">Approve</button>
+          }
+          @if (row.canCancel) {
+            <button mat-button (click)="cancel(row)">Cancel</button>
+          }
+        </div>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns()"></tr>
+    <tr mat-row *matRowDef="let row; columns: columns()"></tr>
+    <tr class="mat-mdc-row empty-row" *matNoDataRow>
+      <td [attr.colspan]="columns().length">{{ loading() ? 'Loading…' : emptyText() }}</td>
+    </tr>
+  </table>
+</div>
+
+@if (result().totalCount > pageSize || pageIndex > 0) {
+  <mat-paginator
+    [length]="result().totalCount"
+    [pageIndex]="pageIndex"
+    [pageSize]="pageSize"
+    [pageSizeOptions]="[10, 20, 50]"
+    (page)="onPage($event)"
+  />
+}

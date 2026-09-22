@@ -1,0 +1,121 @@
+@if (notFound()) {
+  <div class="panel empty">
+    <p>This task doesn't exist or you don't have access to it.</p>
+    <a mat-button routerLink="/tasks">Back to tasks</a>
+  </div>
+} @else if (task(); as task) {
+  <a class="back-link" [routerLink]="['/projects', task.projectId]">
+    <mat-icon>arrow_back</mat-icon>
+    {{ task.projectCode }} · {{ task.projectName }}
+  </a>
+
+  <div class="title-row">
+    <div>
+      <h1>{{ task.title }}</h1>
+      <div class="badges">
+        <app-status-badge [label]="statusLabel(task.status)" [tone]="statusTone(task.status)" />
+        <app-status-badge [label]="task.priority + ' priority'" [tone]="priorityTone(task.priority)" />
+        @if (task.isOverdue) {
+          <app-status-badge label="Overdue" tone="danger" />
+        }
+      </div>
+    </div>
+    @if (task.canEdit) {
+      <button mat-stroked-button (click)="edit()">
+        <mat-icon>edit</mat-icon>
+        Edit
+      </button>
+    }
+  </div>
+
+  @if (task.allowedStatuses.length > 0) {
+    <div class="status-actions">
+      <span class="status-actions-label">Move to</span>
+      @for (status of task.allowedStatuses; track status) {
+        <button
+          mat-stroked-button
+          [class.cancel-action]="status === 'Cancelled'"
+          [disabled]="changingStatus()"
+          (click)="changeStatus(status)"
+        >
+          {{ statusLabel(status) }}
+        </button>
+      }
+    </div>
+  }
+
+  <div class="layout">
+    <div class="main">
+      <section class="panel">
+        <h2>Description</h2>
+        <p class="description">{{ task.description || 'No description.' }}</p>
+      </section>
+
+      <section class="panel">
+        <mat-tab-group animationDuration="0ms" mat-stretch-tabs="false" mat-align-tabs="start">
+          <mat-tab [label]="'Comments (' + comments().length + ')'">
+            <div class="comments">
+              @for (comment of comments(); track comment.id) {
+                <div class="comment">
+                  <div class="comment-meta">
+                    <strong>{{ comment.authorName }}</strong>
+                    <span>{{ comment.createdAt | date: 'medium' }}</span>
+                  </div>
+                  <p>{{ comment.body }}</p>
+                </div>
+              } @empty {
+                <p class="muted">No comments yet.</p>
+              }
+
+              <div class="comment-form">
+                <mat-form-field subscriptSizing="dynamic">
+                  <mat-label>Add a comment</mat-label>
+                  <textarea matInput [formControl]="commentControl" rows="3" maxlength="2000"></textarea>
+                </mat-form-field>
+                <button
+                  mat-flat-button
+                  [disabled]="commentControl.invalid || postingComment()"
+                  (click)="postComment()"
+                >
+                  Post comment
+                </button>
+              </div>
+            </div>
+          </mat-tab>
+
+          <mat-tab label="History">
+            <ul class="history">
+              @for (entry of history(); track entry.id) {
+                <li>
+                  <strong>{{ entry.changedByName }}</strong> {{ describeHistory(entry) }}
+                  <span class="muted">· {{ entry.changedAt | date: 'medium' }}</span>
+                </li>
+              }
+            </ul>
+          </mat-tab>
+        </mat-tab-group>
+      </section>
+    </div>
+
+    <aside class="panel details">
+      <dl>
+        <dt>Assignee</dt>
+        <dd>{{ task.assigneeName ?? 'Unassigned' }}</dd>
+        <dt>Due date</dt>
+        <dd [class.overdue]="task.isOverdue">{{ task.dueDate ? (task.dueDate | date: 'mediumDate') : 'No due date' }}</dd>
+        <dt>Created by</dt>
+        <dd>{{ task.createdByName }}, {{ task.createdAt | date: 'mediumDate' }}</dd>
+        @if (task.completedAt) {
+          <dt>Completed</dt>
+          <dd>{{ task.completedAt | date: 'medium' }}</dd>
+        }
+        @if (task.updatedAt) {
+          <dt>Last updated</dt>
+          <dd>{{ task.updatedAt | date: 'medium' }}</dd>
+        }
+      </dl>
+    </aside>
+  </div>
+} @else {
+  <mat-progress-bar mode="indeterminate" />
+}

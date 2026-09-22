@@ -1,0 +1,76 @@
+<h2 mat-dialog-title>{{ user ? 'Edit user' : 'Create user account' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+  <mat-dialog-content>
+    @if (errorMessage()) {
+      <div class="form-error-banner">{{ errorMessage() }}</div>
+    }
+
+    <div class="form-grid">
+      @if (!user) {
+        <mat-form-field class="full-width">
+          <mat-label>Employee</mat-label>
+          <input
+            matInput
+            [formControl]="employeeSearch"
+            [matAutocomplete]="employeeAuto"
+            placeholder="Search employees without an account"
+          />
+          <mat-autocomplete
+            #employeeAuto="matAutocomplete"
+            [displayWith]="displayEmployee"
+            (optionSelected)="onEmployeeSelected($event)"
+          >
+            @for (option of employeeOptions(); track option.id) {
+              <mat-option [value]="option">
+                {{ option.fullName }} <span class="cell-secondary">· {{ option.employeeCode }}</span>
+              </mat-option>
+            }
+          </mat-autocomplete>
+          <mat-hint>Optional. Leave empty for accounts that are not employees, such as a system admin.</mat-hint>
+        </mat-form-field>
+      }
+
+      <mat-form-field>
+        <mat-label>Full name</mat-label>
+        <input matInput formControlName="fullName" />
+        <mat-error>{{ fieldError(form.controls.fullName) }}</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role">
+          @for (role of roles; track role) {
+            <mat-option [value]="role">{{ role }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (!user) {
+        <mat-form-field>
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" />
+          <mat-error>{{ fieldError(form.controls.email) }}</mat-error>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Temporary password</mat-label>
+          <input matInput type="password" formControlName="password" autocomplete="new-password" />
+          <mat-hint>8+ characters with upper, lower case and a number.</mat-hint>
+          <mat-error>
+            {{
+              form.controls.password.hasError('pattern')
+                ? 'Include an uppercase letter, a lowercase letter and a number.'
+                : fieldError(form.controls.password)
+            }}
+          </mat-error>
+        </mat-form-field>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Cancel</button>
+    <button mat-flat-button type="submit" [disabled]="saving()">Save</button>
+  </mat-dialog-actions>
+</form>

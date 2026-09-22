@@ -1,0 +1,71 @@
+<app-page-header heading="Leave" subtitle="Balances, requests and approvals.">
+  @if (hasEmployeeRecord) {
+    <button mat-flat-button (click)="requestLeave()">
+      <mat-icon>add</mat-icon>
+      Request leave
+    </button>
+  }
+</app-page-header>
+
+<mat-tab-group
+  [selectedIndex]="selectedIndex()"
+  animationDuration="0ms"
+  mat-stretch-tabs="false"
+  mat-align-tabs="start"
+>
+  @if (hasEmployeeRecord) {
+    <mat-tab label="My leave">
+      <div class="tab-body">
+        <div class="balances">
+          @for (balance of balances(); track balance.id) {
+            <div class="balance">
+              <div class="balance-name">{{ balance.leaveTypeName }}</div>
+              <div class="balance-available">
+                {{ balance.availableDays }} <span>day(s) available</span>
+              </div>
+              <div class="balance-detail">
+                {{ balance.usedDays }} used · {{ balance.pendingDays }} pending · {{ balance.allocatedDays }} allocated
+              </div>
+            </div>
+          } @empty {
+            <div class="balance empty">No leave balances for this year yet. HR sets these up.</div>
+          }
+        </div>
+
+        <div class="table-card">
+          <h2 class="card-title">My requests</h2>
+          <app-leave-request-list
+            scope="mine"
+            [reloadKey]="reloadKey()"
+            emptyText="You haven't requested any leave yet."
+            (changed)="onChanged()"
+          />
+        </div>
+      </div>
+    </mat-tab>
+  }
+
+  @if (canReview) {
+    <mat-tab [label]="pendingApprovals() ? 'Approvals (' + pendingApprovals() + ')' : 'Approvals'">
+      <div class="tab-body">
+        <div class="table-card">
+          <app-leave-request-list
+            scope="approvals"
+            [reloadKey]="reloadKey()"
+            emptyText="Nothing waiting for your approval."
+            (changed)="onChanged()"
+            (totalChange)="pendingApprovals.set($event)"
+          />
+        </div>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Team history">
+      <div class="tab-body">
+        <div class="table-card">
+          <app-leave-request-list scope="team" [reloadKey]="reloadKey()" emptyText="No leave requests found." />
+        </div>
+      </div>
+    </mat-tab>
+  }
+</mat-tab-group>

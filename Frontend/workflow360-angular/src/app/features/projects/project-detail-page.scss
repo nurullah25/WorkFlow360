@@ -1,0 +1,140 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--wf-text-muted);
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: var(--wf-text);
+  }
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  .code {
+    color: var(--wf-text-muted);
+    font-weight: 500;
+    margin-right: 6px;
+  }
+}
+
+.description {
+  max-width: 800px;
+  margin: 12px 0 0;
+  color: var(--wf-text-muted);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 20px 0 16px;
+}
+
+.stat {
+  padding: 12px 16px;
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  background: var(--wf-surface);
+
+  mat-progress-bar {
+    margin-top: 8px;
+    border-radius: 3px;
+  }
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--wf-text-muted);
+}
+
+.stat-value {
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.stat-alert .stat-value {
+  color: #a4262c;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+
+  @media (max-width: 1099px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px 0;
+
+  h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+}
+
+.panel {
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  background: var(--wf-surface);
+
+  &.empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--wf-text-muted);
+  }
+}
+
+.members {
+  ul {
+    margin: 0;
+    padding: 8px 16px 12px;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--wf-border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .section-header {
+    padding-bottom: 4px;
+  }
+}
+
+.muted {
+  color: var(--wf-text-muted);
+}

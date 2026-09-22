@@ -1,0 +1,169 @@
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  color: var(--wf-text-muted);
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: var(--wf-text);
+  }
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 4px;
+}
+
+.status-actions-label {
+  color: var(--wf-text-muted);
+  margin-right: 4px;
+}
+
+.cancel-action {
+  --mat-button-outlined-label-text-color: var(--mat-sys-error);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: start;
+
+  @media (max-width: 959px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel {
+  padding: 16px 20px;
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  background: var(--wf-surface);
+
+  h2 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  &.empty {
+    text-align: center;
+    color: var(--wf-text-muted);
+  }
+}
+
+.description {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.muted {
+  color: var(--wf-text-muted);
+}
+
+.comments {
+  padding-top: 12px;
+}
+
+.comment {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--wf-border);
+
+  p {
+    margin: 4px 0 0;
+    white-space: pre-wrap;
+  }
+}
+
+.comment-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+
+  span {
+    color: var(--wf-text-muted);
+  }
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.history {
+  margin: 0;
+  padding: 12px 0 0;
+  list-style: none;
+
+  li {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--wf-border);
+  }
+}
+
+.details dl {
+  margin: 0;
+
+  dt {
+    font-size: 12px;
+    color: var(--wf-text-muted);
+    margin-top: 12px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  dd {
+    margin: 2px 0 0;
+  }
+
+  .overdue {
+    color: #a4262c;
+    font-weight: 500;
+  }
+}

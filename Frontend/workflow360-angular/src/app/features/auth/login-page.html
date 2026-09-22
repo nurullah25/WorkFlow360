@@ -1,0 +1,72 @@
+<div class="page">
+  <div class="card">
+    <div class="brand">
+      <span class="brand-mark">W</span>
+      <span class="brand-name">WorkFlow360</span>
+    </div>
+
+    <h1>Sign in</h1>
+    <p class="hint">Use your company email address.</p>
+
+    @if (errorMessage()) {
+      <div class="error-banner" role="alert">
+        <mat-icon>error</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <mat-form-field>
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="username" />
+        @if (form.controls.email.hasError('required')) {
+          <mat-error>Email is required.</mat-error>
+        } @else if (form.controls.email.hasError('email')) {
+          <mat-error>Enter a valid email address.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input
+          matInput
+          [type]="hidePassword() ? 'password' : 'text'"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="hidePassword.set(!hidePassword())"
+          [attr.aria-label]="hidePassword() ? 'Show password' : 'Hide password'"
+        >
+          <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
+        </button>
+        @if (form.controls.password.hasError('required')) {
+          <mat-error>Password is required.</mat-error>
+        }
+      </mat-form-field>
+
+      <button mat-flat-button type="submit" class="submit" [disabled]="submitting()">
+        @if (submitting()) {
+          <mat-spinner diameter="18" />
+        } @else {
+          Sign in
+        }
+      </button>
+    </form>
+
+    @if (showDemoAccounts) {
+      <div class="demo">
+        <div class="demo-title">Demo accounts</div>
+        @for (account of demoAccounts; track account.email) {
+          <button type="button" class="demo-account" (click)="useDemoAccount(account.email)">
+            <span>{{ account.email }}</span>
+            <span class="demo-role">{{ account.role }}</span>
+          </button>
+        }
+      </div>
+    }
+  </div>
+</div>
