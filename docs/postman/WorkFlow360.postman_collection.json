@@ -1,0 +1,234 @@
+{
+  "info": {
+    "name": "WorkFlow360 API",
+    "description": "Run \"Auth / Login\" first: it stores the access token for every other request. Change the email variable to try other roles (see README for demo accounts). List requests store the first id they return so the follow-up requests work without editing.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5080" },
+    { "key": "email", "value": "tanvir.ahmed@workflow360.local" },
+    { "key": "password", "value": "Passw0rd!" },
+    { "key": "accessToken", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "leaveId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "auth": { "type": "noauth" },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('signed in', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('accessToken', pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}" },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Refresh (uses the HttpOnly cookie from Login)",
+          "auth": { "type": "noauth" },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.collectionVariables.set('accessToken', pm.response.json().accessToken);"]
+              }
+            }
+          ],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/refresh" }
+        },
+        { "name": "Me", "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/me" } },
+        { "name": "Logout", "auth": { "type": "noauth" }, "request": { "method": "POST", "url": "{{baseUrl}}/api/auth/logout" } }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [{ "name": "Dashboard (sections depend on role)", "request": { "method": "GET", "url": "{{baseUrl}}/api/dashboard" } }]
+    },
+    {
+      "name": "Organisation",
+      "item": [
+        { "name": "Employees - list", "request": { "method": "GET", "url": "{{baseUrl}}/api/employees?page=1&pageSize=20&search=hasan&sortBy=name" } },
+        { "name": "Employees - lookup (autocomplete)", "request": { "method": "GET", "url": "{{baseUrl}}/api/employees/lookup?search=ra" } },
+        {
+          "name": "Employees - create (Admin/HR)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeCode\": \"E2001\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Hire\",\n  \"email\": \"test.hire@workflow360.local\",\n  \"phone\": null,\n  \"departmentId\": 1,\n  \"designationId\": 1,\n  \"managerId\": null,\n  \"joiningDate\": \"2026-10-01\",\n  \"status\": \"Probation\"\n}"
+            },
+            "url": "{{baseUrl}}/api/employees"
+          }
+        },
+        { "name": "Departments - list", "request": { "method": "GET", "url": "{{baseUrl}}/api/departments?includeInactive=true" } },
+        { "name": "Designations - list", "request": { "method": "GET", "url": "{{baseUrl}}/api/designations" } },
+        { "name": "Users - list (Admin)", "request": { "method": "GET", "url": "{{baseUrl}}/api/users?page=1&pageSize=20" } }
+      ]
+    },
+    {
+      "name": "Projects & tasks",
+      "item": [
+        {
+          "name": "Projects - list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const items = pm.response.json().items;",
+                  "if (items.length) pm.collectionVariables.set('projectId', items[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects?page=1&pageSize=20" }
+        },
+        { "name": "Projects - get", "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}" } },
+        {
+          "name": "Projects - tasks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const items = pm.response.json().items;",
+                  "if (items.length) pm.collectionVariables.set('taskId', items[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/projects/{{projectId}}/tasks?openOnly=true&sortBy=dueDate" }
+        },
+        { "name": "Tasks - assigned to me, open", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks?assignedToMe=true&openOnly=true" } },
+        { "name": "Tasks - overdue", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks?overdueOnly=true" } },
+        { "name": "Tasks - get (includes allowedStatuses)", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks/{{taskId}}" } },
+        {
+          "name": "Tasks - create (project manager)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectId\": {{projectId}},\n  \"title\": \"Write release notes\",\n  \"description\": null,\n  \"assigneeId\": null,\n  \"priority\": \"Medium\",\n  \"dueDate\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/tasks"
+          }
+        },
+        {
+          "name": "Tasks - change status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"InReview\"\n}" },
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/status"
+          }
+        },
+        {
+          "name": "Tasks - add comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"body\": \"Looks good, merging today.\"\n}" },
+            "url": "{{baseUrl}}/api/tasks/{{taskId}}/comments"
+          }
+        },
+        { "name": "Tasks - history", "request": { "method": "GET", "url": "{{baseUrl}}/api/tasks/{{taskId}}/history" } }
+      ]
+    },
+    {
+      "name": "Leave",
+      "item": [
+        { "name": "My balances", "request": { "method": "GET", "url": "{{baseUrl}}/api/leaves/my-balances" } },
+        { "name": "Preview working days", "request": { "method": "GET", "url": "{{baseUrl}}/api/leaves/preview?leaveTypeId=1&startDate=2026-11-01&endDate=2026-11-05" } },
+        {
+          "name": "Submit request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["if (pm.response.code === 201) pm.collectionVariables.set('leaveId', pm.response.json().id);"]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leaveTypeId\": 1,\n  \"startDate\": \"2026-11-01\",\n  \"endDate\": \"2026-11-05\",\n  \"reason\": \"Family trip\"\n}"
+            },
+            "url": "{{baseUrl}}/api/leaves"
+          }
+        },
+        { "name": "My requests", "request": { "method": "GET", "url": "{{baseUrl}}/api/leaves?scope=mine" } },
+        { "name": "Waiting for my approval", "request": { "method": "GET", "url": "{{baseUrl}}/api/leaves?scope=approvals" } },
+        { "name": "Team history", "request": { "method": "GET", "url": "{{baseUrl}}/api/leaves?scope=team&status=Approved" } },
+        {
+          "name": "Approve (the employee's manager)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"comment\": \"Enjoy!\"\n}" },
+            "url": "{{baseUrl}}/api/leaves/{{leaveId}}/approve"
+          }
+        },
+        {
+          "name": "Reject (comment required)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"comment\": \"Release week, please pick other dates.\"\n}" },
+            "url": "{{baseUrl}}/api/leaves/{{leaveId}}/reject"
+          }
+        },
+        { "name": "Cancel (own request)", "request": { "method": "PUT", "url": "{{baseUrl}}/api/leaves/{{leaveId}}/cancel" } },
+        { "name": "Leave types", "request": { "method": "GET", "url": "{{baseUrl}}/api/leave-types" } },
+        { "name": "Holidays", "request": { "method": "GET", "url": "{{baseUrl}}/api/holidays" } }
+      ]
+    },
+    {
+      "name": "Attendance",
+      "item": [
+        { "name": "Today", "request": { "method": "GET", "url": "{{baseUrl}}/api/attendance/today" } },
+        { "name": "Check in", "request": { "method": "POST", "url": "{{baseUrl}}/api/attendance/check-in" } },
+        { "name": "Check out", "request": { "method": "POST", "url": "{{baseUrl}}/api/attendance/check-out" } },
+        { "name": "My month", "request": { "method": "GET", "url": "{{baseUrl}}/api/attendance/month" } },
+        { "name": "Team month (managers, HR)", "request": { "method": "GET", "url": "{{baseUrl}}/api/attendance/team" } }
+      ]
+    },
+    {
+      "name": "Notifications & audit",
+      "item": [
+        { "name": "Unread count", "request": { "method": "GET", "url": "{{baseUrl}}/api/notifications/unread-count" } },
+        { "name": "List", "request": { "method": "GET", "url": "{{baseUrl}}/api/notifications?unreadOnly=true" } },
+        { "name": "Mark all read", "request": { "method": "PUT", "url": "{{baseUrl}}/api/notifications/read-all" } },
+        { "name": "Audit log (Admin)", "request": { "method": "GET", "url": "{{baseUrl}}/api/audit-logs?action=LeaveApproved" } }
+      ]
+    }
+  ]
+}
